@@ -1,0 +1,48 @@
+from aiogram import Bot, Dispatcher, types
+from aiogram.contrib.middlewares.logging import LoggingMiddleware
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
+
+# Bu yerda Telegram bot tokeningizni kiriting
+API_TOKEN = 'Bot API token'
+
+bot = Bot(token=API_TOKEN)
+dp = Dispatcher(bot)
+dp.middleware.setup(LoggingMiddleware())
+
+# Darslar ro'yxati
+lessons = [
+    "Kirish",
+    "1 Dars",
+    "2 Dars",
+    "3 Dars",
+    # Qolgan darslar
+]
+
+# Kod yozish boshlanishi
+@dp.message_handler(text="🇺🇿 Nemis tilini 0 dan | Uzbek tilida o'rganish")
+async def sendVideo(message: types.Message):
+    lesson_buttons = []
+    for lesson in lessons:
+        lesson_buttons.append(InlineKeyboardButton(text=f"📹 {lesson}", callback_data=lesson.lower().replace(" ", ""))
+
+    homeOld = InlineKeyboardButton(text="⬅️ Orqaga qaytish", callback_data="back_old")
+    homeExit = InlineKeyboardButton(text="⬅️ Back menu", callback_data="back_home")
+
+    # Darslar ro'yxati va boshqa tugmalar uchun klaviatura
+    lesson_buttons.append(homeOld)
+    lesson_buttons.append(homeExit)
+
+    course_buttons = InlineKeyboardMarkup(row_width=2)
+    course_buttons.add(*lesson_buttons)
+
+    keyboards = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True, row_width=2)
+    keyboards.add(*lesson_buttons)
+
+    await message.reply(
+        text="hello",
+        reply_markup=keyboards,
+    )
+
+if __name__ == '__main__':
+    from aiogram import executor
+    executor.start_polling(dp, skip_updates=True)

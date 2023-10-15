@@ -1,0 +1,19 @@
+lessons = [
+    "Kirish",
+    "1 Dars",
+    "2 Dars",
+    "3 Dars",
+    # Qolgan darslar
+]
+
+lesson_buttons = []
+for lesson in lessons:
+    lesson_data = lesson.lower().replace(" ", "")
+    lesson_buttons.append(InlineKeyboardButton(text=f"📹 {lesson}", callback_data=lesson_data))
+
+# ...
+
+@dp.callback_query_handler(lambda c: c.data in lessons)
+async def process_lesson_callback(callback_query: types.CallbackQuery):
+    lesson = callback_query.data  # Dars nomi haqiqiy ma'lumot sifatida olinadi
+    # Boshqa operatsiyalar
