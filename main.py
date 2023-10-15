@@ -9,6 +9,8 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import asyncio
 # import logging
 # from aiogram.contrib.middlewares.logging import LoggingMiddleware
+from aiogram.types import ParseMode
+
 
 # Config Data
 from config import *
@@ -26,6 +28,19 @@ botName = str("Hi Germany Bot")
 # logging.basicConfig(level=logging.INFO)
 
 # bot.middleware.setup(LoggingMiddleware())
+
+# Database
+
+conn = sqlite3.connect('users.db')
+cursor = conn.cursor()
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        user_id INTEGER PRIMARY KEY,
+        username TEXT,
+        firstname TEXT
+    )
+''')
+conn.commit()
 
 
 
@@ -77,6 +92,13 @@ try:
                 text = f"<b><em>{ userName }, { botName } ga xush kelibsiz.</em> \n\n❗️ <em>{ userName }</em>, Botdan foydalanish uchun Kanalimizga obuna bo'ling</b>",
                 reply_markup=followChannel()
             )
+
+        user_id = message.from_user.id
+        username = message.from_user.username
+        firstname = message.from_user.first_name
+
+        cursor.execute('INSERT OR REPLACE INTO users (user_id, username, firstname) VALUES (?, ?, ?)', (user_id, username, firstname))
+        conn.commit()
             
     @bot.callback_query_handler(lambda checkSub: checkSub.data=="subdone")
     async def checkSubMes(callback: types.CallbackQuery):
@@ -95,6 +117,25 @@ try:
                     text = f"<b>❌ <em>{ userName }</em>, hali kanalimizga obuna bo'lmadingiz.</b>",
                     reply_markup=followChannel()
                 )
+
+
+    @bot.message_handler(commands=['admin'])
+    async def admin_command(message: types.Message):
+        userName = str(message.chat.first_name)
+
+        if message.from_user.id == (SUPER_USER_ID or ADMIN):
+            cursor.execute('SELECT firstname FROM users ORDER BY user_id DESC LIMIT 20')
+            user_data = cursor.fetchall()
+            firstname = [data[0] for data in user_data if data[0]]
+            total_users = len(firstname)
+
+            if firstname:
+                firstname_text = "\n".join(firstname)
+                await message.reply(f"<b>Ja'mi foydalanuvchilar <em>({ total_users }</em> ta)\n\nEng so'ngi 20 foydalanuvchilar: \n\n{ firstname_text }</b>", parse_mode=ParseMode.HTML)
+            else:
+                await message.reply("Hozircha foydalanuvchilar mavjud emas.")
+        else:
+            await message.reply(f"❌ <em>{ userName }</em> Siz Admin Emassiz ❗️")
 
     
     @bot.message_handler(text="⬅️ Back menu")
