@@ -6,6 +6,7 @@ from aiogram import Bot, Dispatcher, executor, types
 
 from aiogram.types import ReplyKeyboardMarkup
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+import sqlite3
 import asyncio
 # import logging
 # from aiogram.contrib.middlewares.logging import LoggingMiddleware
